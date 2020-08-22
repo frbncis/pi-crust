@@ -4,6 +4,16 @@
 #include "hid.h"
 #include <iostream>
 
+#define MOD_NONE 0
+#define MOD_LCTRL 1 << 0
+#define MOD_LSHIFT 1 << 1
+#define MOD_LALT 1 << 2
+#define MOD_LSUPER 1 << 3
+#define MOD_RCTRL 1 << 4
+#define MOD_RSHIFT 1 << 5
+#define MOD_RALT 1 << 6
+#define MOD_RSUPER 1 << 7
+
 Keyboard::Keyboard(std::string hid_device)
 {
     this->hid_device = hid_device;
@@ -25,11 +35,34 @@ void Keyboard::send_keyboard_reports()
 {
     FILE *hid_pipe = fopen(this->hid_device.c_str(), "w");
 
-    std::cout << "Sending reports\n";
+    std::cout << "Sending report\n";
 
-    for (int i = 0; i < this->pressed_keys.size(); i++)
+    unsigned long held_key_buffer[6] = { 0, 0, 0, 0, 0, 0 };
+    unsigned long report_buffer[8] = { '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0'};
+
+    int buffer_position = 0;
+
+    for (auto const& [held_key, is_held]: this->held_keys)
     {
-        struct x11_keysym *s = toscan2(this->pressed_keys[i]);
+        if (is_held == true && !is_modifier(held_key))
+        {
+            held_key_buffer[buffer_position++] = held_key;
+        }
+
+        if (buffer_position > 6)
+        {
+            break;
+        }
+    }
+
+    for (int i = 0; i < 6; i++)
+    {
+        if (held_key_buffer[i] == NULL)
+        {
+            continue;
+        }
+
+        struct x11_keysym *s = toscan2(held_key_buffer[i]);
 
         if (s == NULL)
         {
@@ -44,18 +77,37 @@ void Keyboard::send_keyboard_reports()
             continue;
         }
 
-        send_key(hid_pipe, l->key, l->mod);
-        send_key(hid_pipe, '\0', '\0'); //release all keys
-        
-        if (l->is_dead)
-        {
-            //dead keys need to be pressed twice to show up
-            send_key(hid_pipe, l->key, l->mod);
-            send_key(hid_pipe, '\0', '\0'); //release all keys
-        }
+        // send_key(hid_pipe, l->key, l->mod);
+
+        report_buffer[i] = l->key;
     }
 
-    this->pressed_keys.clear();
+    // this->pressed_keys.clear();
+    char report_output[20];
+
+    sprintf(
+        report_output,
+        "%x %x %x %x %x %x %x %x",
+        this->get_modifier_status(held_keys), 
+        '\0', 
+        report_buffer[0], 
+        report_buffer[1],
+        report_buffer[2],
+        report_buffer[3],
+        report_buffer[4],
+        report_buffer[5]);
+
+    std::cout << report_output << "\n";
 
     fclose(hid_pipe);
+}
+
+bool Keyboard::is_modifier(unsigned long key_sym)
+{
+    return key_sym == XK_Control_L || key_sym == XK_Shift_L || key_sym == XK_Alt_L || key_sym == XK_Super_L || key_sym == XK_Control_R || key_sym == XK_Shift_R || key_sym == XK_Alt_R || key_sym == XK_Super_R;
+}
+
+unsigned short Keyboard::get_modifier_status(std::map<KeySym, bool> held_keys)
+{
+    return (held_keys[XK_Control_L] && (1 << 0));
 }
