@@ -17,7 +17,7 @@ private:
 
     bool is_modifier(unsigned long key_sym);
 
-    unsigned long get_modifier_report(std::map<KeySym, bool> held_keys);
+    unsigned char get_modifier_report(std::map<KeySym, bool> held_keys);
 
     std::string hid_device;
 };

@@ -6,24 +6,14 @@
 #include <X11/XKBlib.h>
 
 #include "keyboard.h"
-#include "hid.h"
 
 enum params
 {          //argv-indices:
     P_EXE, //executable name
     P_DEV, //device file
-    P_LAY, //layout
-    P_UNI, //unicode method
     NUM_P  //number of parameters
 };
 
-enum uni_m
-{              //unicode methods:
-    SKIP,      //ignore any keys not on the layout
-    GTK_HOLD,  //hold ctrl and shift while entering hex values
-    GTK_SPACE, //end hex sequence with spacebar
-    WINDOWS    //use alt+numpad
-};
 enum errors
 {
     ERR_SUCCESS,  //no error
@@ -33,7 +23,6 @@ enum errors
     ERR_LAZY      //i haven't done this
 };
 
-
 int main(int argc, char **argv)
 {
     if (argc != NUM_P)
@@ -41,15 +30,7 @@ int main(int argc, char **argv)
         fprintf(stderr, "Usage: %s <device file> <layout> <unicode>\n", argv[P_EXE]);
         fprintf(stderr, "Takes string to type from stdin\n");
         fprintf(stderr, "<device file>:\ton the Raspberry Pi usually /dev/hidg0\n");
-        fprintf(stderr, "<layout>:\n\t%d\t%s\n\t%d\t%s\n\t%d\t%s\n",
-                en_US, "en_US",
-                de_AT, "de_AT (w/ dead keys)",
-                de_ND, "de_AT-nodeadkeys");
-        fprintf(stderr, "<unicode>:\n\t%d\t%s\n\t%d\t%s\n\t%d\t%s\n\t%d\t%s\n",
-                SKIP, "skip over unicode characters",
-                GTK_HOLD, "X11 Holddown: CTRL+SHIFT+[u, hex]",
-                GTK_SPACE, "X11 Space: CTRL+SHIFT+u, hex, SPACE",
-                WINDOWS, "Windows: Alt+[Numpad]");
+
         return ERR_ARGCOUNT;
     }
 
@@ -95,8 +76,6 @@ int main(int argc, char **argv)
     {
         XNextEvent(display, &event);
 
-        // FILE *hid_dev = NULL;
-
         /* keyboard events */
         if (event.type == KeyPress)
         {
@@ -107,9 +86,6 @@ int main(int argc, char **argv)
             printf("KeyPress: %s [0x%lx]\n", sym_name, keysym);
 
             kb.key_down_handler(keysym);
-
-
-            // fclose(hid_dev);
 
             /* exit on ESC key press */
             if (event.xkey.keycode == 0x09)

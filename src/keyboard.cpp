@@ -1,7 +1,6 @@
 #include <keyboard.h>
 #include <X11/keysymdef.h>
 #include "scancodes.h"
-#include "hid.h"
 #include <iostream>
 
 #define MOD_NONE 0
@@ -35,12 +34,12 @@ void Keyboard::send_keyboard_reports()
 
     std::cout << "Sending report\n";
 
-    unsigned long held_key_buffer[6] = { 0, 0, 0, 0, 0, 0 };
-    unsigned long report_buffer[8] = { '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0'};
+    unsigned long held_key_buffer[6] = {0x00, 0x0, 0x0, 0x0, 0x0, 0x0};
+    unsigned char report_buffer[8] = {'\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0'};
 
     int buffer_position = 0;
 
-    for (auto const& [held_key, is_held]: this->held_keys)
+    for (auto const &[held_key, is_held] : this->held_keys)
     {
         if (is_held == true && !is_modifier(held_key))
         {
@@ -55,12 +54,12 @@ void Keyboard::send_keyboard_reports()
 
     for (int i = 0; i < 6; i++)
     {
-        if (held_key_buffer[i] == NULL)
+        if (held_key_buffer[i] == 0x00)
         {
             continue;
         }
 
-        struct x11_keysym *s = toscan2(held_key_buffer[i]);
+        unsigned char *s = toscan2(held_key_buffer[i]);
 
         if (s == NULL)
         {
@@ -68,22 +67,31 @@ void Keyboard::send_keyboard_reports()
             continue;
         }
 
-        struct layout *l = tolay(s, en_US);
-        if (l == NULL)
-        {
-            fprintf(stderr, "Unrecognised keyboard layout.\n");
-            continue;
-        }
-
-        report_buffer[i] = l->key;
+        report_buffer[i] = *s;
     }
+
+    char report[16];
+
+    sprintf(
+        report,
+        "%x %x %x %x %x %x %x %x",
+        this->get_modifier_report(held_keys),
+        '\0',
+        report_buffer[0],
+        report_buffer[1],
+        report_buffer[2],
+        report_buffer[3],
+        report_buffer[4],
+        report_buffer[5]);
+
+    std::cout << report << "\n";
 
     fprintf(
         hid_pipe,
         "%c%c%c%c%c%c%c%c",
-        this->get_modifier_report(held_keys), 
-        '\0', 
-        report_buffer[0], 
+        this->get_modifier_report(held_keys),
+        '\0',
+        report_buffer[0],
         report_buffer[1],
         report_buffer[2],
         report_buffer[3],
@@ -95,18 +103,24 @@ void Keyboard::send_keyboard_reports()
 
 bool Keyboard::is_modifier(unsigned long key_sym)
 {
-    return key_sym == XK_Control_L || key_sym == XK_Shift_L || key_sym == XK_Alt_L || key_sym == XK_Super_L || key_sym == XK_Control_R || key_sym == XK_Shift_R || key_sym == XK_Alt_R || key_sym == XK_Super_R;
+    return key_sym == XK_Control_L ||
+           key_sym == XK_Shift_L ||
+           key_sym == XK_Alt_L ||
+           key_sym == XK_Super_L ||
+           key_sym == XK_Control_R ||
+           key_sym == XK_Shift_R ||
+           key_sym == XK_Alt_R ||
+           key_sym == XK_Super_R;
 }
 
-unsigned long Keyboard::get_modifier_report(std::map<KeySym, bool> held_keys)
+unsigned char Keyboard::get_modifier_report(std::map<KeySym, bool> held_keys)
 {
-    return
-        (held_keys[XK_Control_L] << 0) +
-        (held_keys[XK_Shift_L]   << 1) +
-        (held_keys[XK_Alt_L]     << 2) +
-        (held_keys[XK_Super_L]   << 3) +
-        (held_keys[XK_Control_R] << 4) +
-        (held_keys[XK_Shift_R]   << 5) +
-        (held_keys[XK_Alt_R]     << 6) +
-        (held_keys[XK_Super_R]   << 7);
+    return (held_keys[XK_Control_L] << 0) +
+           (held_keys[XK_Shift_L] << 1) +
+           (held_keys[XK_Alt_L] << 2) +
+           (held_keys[XK_Super_L] << 3) +
+           (held_keys[XK_Control_R] << 4) +
+           (held_keys[XK_Shift_R] << 5) +
+           (held_keys[XK_Alt_R] << 6) +
+           (held_keys[XK_Super_R] << 7);
 }
