@@ -1,4 +1,3 @@
-// (C) 2016 Tobias Girstmair, released under the GNU GPL
 #include <X11/Xlib.h>
 #include <string.h>
 #include "scancodes.h"
@@ -51,10 +50,8 @@ std::unordered_map<KeySym, unsigned char> x11_keysyms =
         {XK_space, 0x2C},
         {XK_Super_L, 0x08}};
 
-unsigned char *toscan2(unsigned int x11_keycode)
+unsigned char *get_scancode(unsigned int x11_keycode)
 {
-    //    printf("Looking for 0x%x\n", x11_keycode);
-
     auto scan_code = x11_keysyms[x11_keycode];
 
     if (scan_code == '\0')

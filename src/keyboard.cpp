@@ -46,7 +46,7 @@ void Keyboard::send_keyboard_reports()
     {
         if (is_held == true && !is_modifier(held_key))
         {
-            unsigned char *s = toscan2(held_key);
+            unsigned char *s = get_scancode(held_key);
 
             if (s != NULL)
             {
