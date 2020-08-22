@@ -1,5 +1,5 @@
 build:
 	mkdir -p out
-	gcc -DXK_MISCELLANY=1 -DXK_LATIN1=1 -L/usr/X11/lib -lX11 -o out/kvm.out xreadkeys.c scancodes.c
+	gcc -o out/kvm.out xreadkeys.c scancodes.c -DXK_MISCELLANY=1 -DXK_LATIN1=1 -L/usr/include/ -lX11
 
 .PHONY: clean
