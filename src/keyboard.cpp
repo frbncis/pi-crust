@@ -27,7 +27,7 @@ void Keyboard::key_down_handler(unsigned long key_sym)
 
 void Keyboard::key_up_handler(unsigned long key_sym)
 {
-    this->held_keys[key_sym] = false;
+    this->held_keys.erase(key_sym);
 }
 
 void Keyboard::send_keyboard_reports()
