@@ -15,13 +15,9 @@ public:
 private:
     std::map<KeySym, bool> held_keys;
 
-    std::map<KeySym, bool> pressed_keys;
-
-    std::map<KeySym, bool> released_keys;
-
     bool is_modifier(unsigned long key_sym);
 
-    unsigned short get_modifier_status(std::map<KeySym, bool> held_keys);
+    unsigned long get_modifier_report(std::map<KeySym, bool> held_keys);
 
     std::string hid_device;
 };

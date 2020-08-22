@@ -22,13 +22,11 @@ Keyboard::Keyboard(std::string hid_device)
 void Keyboard::key_down_handler(unsigned long key_sym)
 {
     this->held_keys[key_sym] = true;
-    this->pressed_keys[key_sym] = true;
 }
 
 void Keyboard::key_up_handler(unsigned long key_sym)
 {
     this->held_keys[key_sym] = false;
-    this->released_keys[key_sym] = true;
 }
 
 void Keyboard::send_keyboard_reports()
@@ -77,18 +75,13 @@ void Keyboard::send_keyboard_reports()
             continue;
         }
 
-        // send_key(hid_pipe, l->key, l->mod);
-
         report_buffer[i] = l->key;
     }
 
-    // this->pressed_keys.clear();
-    char report_output[20];
-
-    sprintf(
-        report_output,
-        "%x %x %x %x %x %x %x %x",
-        this->get_modifier_status(held_keys), 
+    fprintf(
+        hid_pipe,
+        "%c%c%c%c%c%c%c%c",
+        this->get_modifier_report(held_keys), 
         '\0', 
         report_buffer[0], 
         report_buffer[1],
@@ -96,8 +89,6 @@ void Keyboard::send_keyboard_reports()
         report_buffer[3],
         report_buffer[4],
         report_buffer[5]);
-
-    std::cout << report_output << "\n";
 
     fclose(hid_pipe);
 }
@@ -107,7 +98,15 @@ bool Keyboard::is_modifier(unsigned long key_sym)
     return key_sym == XK_Control_L || key_sym == XK_Shift_L || key_sym == XK_Alt_L || key_sym == XK_Super_L || key_sym == XK_Control_R || key_sym == XK_Shift_R || key_sym == XK_Alt_R || key_sym == XK_Super_R;
 }
 
-unsigned short Keyboard::get_modifier_status(std::map<KeySym, bool> held_keys)
+unsigned long Keyboard::get_modifier_report(std::map<KeySym, bool> held_keys)
 {
-    return (held_keys[XK_Control_L] && (1 << 0));
+    return
+        (held_keys[XK_Control_L] << 0) +
+        (held_keys[XK_Shift_L]   << 1) +
+        (held_keys[XK_Alt_L]     << 2) +
+        (held_keys[XK_Super_L]   << 3) +
+        (held_keys[XK_Control_R] << 4) +
+        (held_keys[XK_Shift_R]   << 5) +
+        (held_keys[XK_Alt_R]     << 6) +
+        (held_keys[XK_Super_R]   << 7);
 }
