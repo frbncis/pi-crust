@@ -1,18 +1,19 @@
 #include <X11/Xlib.h>
 #include <stdio.h>
 #include <stdlib.h>
- 
+
 int main()
 {
     Display *display;
     Window window;
     XEvent event;
+    int eventLoopRunOnce = 0;
     int s;
 
     printf("Starting...\n");
  
     /* open connection with the server */
-    display = XOpenDisplay(":0.0");
+    display = XOpenDisplay(NULL);
     if (display == NULL)
     {
         fprintf(stderr, "Cannot open display\n");
@@ -55,7 +56,12 @@ int main()
         {
             printf( "KeyRelease: %x\n", event.xkey.keycode );
         }
-	else if (event.type == EnterNotify)
+	/* dummy x11 screen entry/exit events */
+	else if (event.type == EnterNotify && !eventLoopRunOnce)
+	{
+           eventLoopRunOnce = 1;
+	}
+	else if (event.type == EnterNotify && eventLoopRunOnce)
 	{
 	   printf("EnterWindow\n");
 	}
