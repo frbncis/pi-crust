@@ -13,6 +13,8 @@
 #define MOD_RALT 1 << 6
 #define MOD_RSUPER 1 << 7
 
+#define MAX_KEYPRESSES_REPORTED 6
+
 Keyboard::Keyboard(std::string hid_device)
 {
     this->hid_device = hid_device;
@@ -34,8 +36,9 @@ void Keyboard::send_keyboard_reports()
 
     std::cout << "Sending report\n";
 
-    unsigned long held_key_buffer[6] = {0x00, 0x0, 0x0, 0x0, 0x0, 0x0};
-    unsigned char report_buffer[8] = {'\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0'};
+    // Note that X11 only reports a maximum of three non-modifier keypresses.
+    // The maximum defined is is the USB HID maximum.
+    unsigned char report_buffer[MAX_KEYPRESSES_REPORTED] = {'\0', '\0', '\0', '\0', '\0', '\0'};
 
     int buffer_position = 0;
 
@@ -43,31 +46,24 @@ void Keyboard::send_keyboard_reports()
     {
         if (is_held == true && !is_modifier(held_key))
         {
-            held_key_buffer[buffer_position++] = held_key;
+            unsigned char *s = toscan2(held_key);
+
+            if (s != NULL)
+            {
+                std::cout << "Reporting " << held_key << "\n";
+                report_buffer[buffer_position++] = *s;
+            }
+            else
+            {
+                printf("Key symbol not found.\n");
+            }
         }
 
-        if (buffer_position > 6)
+        if (buffer_position > MAX_KEYPRESSES_REPORTED)
         {
+            std::cout << "Ignoring extra pressed keys\n";
             break;
         }
-    }
-
-    for (int i = 0; i < 6; i++)
-    {
-        if (held_key_buffer[i] == 0x00)
-        {
-            continue;
-        }
-
-        unsigned char *s = toscan2(held_key_buffer[i]);
-
-        if (s == NULL)
-        {
-            printf("Key symbol not found.\n");
-            continue;
-        }
-
-        report_buffer[i] = *s;
     }
 
     char report[16];

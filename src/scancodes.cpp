@@ -11,6 +11,7 @@ std::unordered_map<KeySym, unsigned char> x11_keysyms =
         {XK_a, 0x04},
         {XK_b, 0x05},
         {XK_c, 0x06},
+        {XK_d, 0x07},
         {XK_s, 0x16},
         {XK_z, 0x1d},
         {XK_BackSpace, 0x2a},
