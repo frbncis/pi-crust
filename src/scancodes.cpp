@@ -33,14 +33,15 @@ std::unordered_map<KeySym, unsigned char> x11_keysyms =
         {XK_w, 0x1A},
         {XK_x, 0x1B},
         {XK_y, 0x1C},
-        {XK_z, 0x2D},
+        {XK_z, 0x1D},
+	{XK_space, 0x2C},
         {XK_BackSpace, 0x2A},
         {XK_Return, 0x28},
         {XK_Super_L, 0x08}};
 
 unsigned char *toscan2(unsigned int x11_keycode)
 {
-    printf("Looking for 0x%x\n", x11_keycode);
+//    printf("Looking for 0x%x\n", x11_keycode);
 
     auto scan_code = x11_keysyms[x11_keycode];
 

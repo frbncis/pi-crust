@@ -34,7 +34,7 @@ void Keyboard::send_keyboard_reports()
 {
     FILE *hid_pipe = fopen(this->hid_device.c_str(), "w");
 
-    std::cout << "Sending report\n";
+//    std::cout << "Sending report\n";
 
     // Note that X11 only reports a maximum of three non-modifier keypresses.
     // The maximum defined is is the USB HID maximum.
@@ -50,7 +50,7 @@ void Keyboard::send_keyboard_reports()
 
             if (s != NULL)
             {
-                std::cout << "Reporting " << held_key << "\n";
+//                std::cout << "Reporting " << held_key << "\n";
                 report_buffer[buffer_position++] = *s;
             }
             else
@@ -66,21 +66,21 @@ void Keyboard::send_keyboard_reports()
         }
     }
 
-    char report[16];
-
-    sprintf(
-        report,
-        "%x %x %x %x %x %x %x %x",
-        this->get_modifier_report(held_keys),
-        '\0',
-        report_buffer[0],
-        report_buffer[1],
-        report_buffer[2],
-        report_buffer[3],
-        report_buffer[4],
-        report_buffer[5]);
-
-    std::cout << report << "\n";
+//    char report[16];
+//
+//    sprintf(
+//        report,
+//        "%x %x %x %x %x %x %x %x",
+//        this->get_modifier_report(held_keys),
+//        '\0',
+//        report_buffer[0],
+//        report_buffer[1],
+//        report_buffer[2],
+//        report_buffer[3],
+//        report_buffer[4],
+//        report_buffer[5]);
+//
+//    std::cout << report << "\n";
 
     fprintf(
         hid_pipe,

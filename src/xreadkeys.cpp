@@ -83,7 +83,7 @@ int main(int argc, char **argv)
 
             char *sym_name = XKeysymToString(keysym);
 
-            printf("KeyPress: %s [0x%lx]\n", sym_name, keysym);
+//            printf("KeyPress: %s [0x%lx]\n", sym_name, keysym);
 
             kb.key_down_handler(keysym);
 
@@ -97,7 +97,7 @@ int main(int argc, char **argv)
 
             char *sym_name = XKeysymToString(keysym);
 
-            printf("KeyRelease: %s [0x%lx]\n", sym_name, keysym);
+//            printf("KeyRelease: %s [0x%lx]\n", sym_name, keysym);
 
             kb.key_up_handler(keysym);
         }
