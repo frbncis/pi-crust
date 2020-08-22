@@ -20,6 +20,13 @@ struct layout {
 	unsigned short mod; //bitmask of modifier keys
 	short is_dead; //is dead key (needs to be pressed twice)
 };
+struct x11_keysym {
+	unsigned int sym;
+	struct layout en_us; //substructure for this layout
+	struct layout de_at;
+	struct layout de_nd;
+	unsigned int unicode; //the unicode number to send via alt+numpad or ^U if char is not available in a keyboard layout
+};
 struct keysym {
 	char sym [UTF8_MAX_LENGTH]; //utf-8 encoded key symbol
 	struct layout en_us; //substructure for this layout
@@ -35,6 +42,7 @@ enum kbdl {  //keyboard layouts:
         de_ND //de_AT-nodeadkeys
 };
 
+struct x11_keysym* toscan2 (unsigned int x11_keycode);//returns the layout struct of a keysym
 struct keysym* toscan (const char* utf8);//returns the layout struct of a keysym
 struct layout* tolay (struct keysym* s, enum kbdl layout); //returns layout struct from keysym struct
 #endif

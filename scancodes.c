@@ -1,6 +1,14 @@
 // (C) 2016 Tobias Girstmair, released under the GNU GPL
 #include <string.h>
 #include "scancodes.h"
+#include <X11/keysymdef.h>
+
+struct x11_keysym x11_keysyms[] = {
+	{XK_a, {0x04, 0x00}, {0x04, 0x00}, {0x04, 0x00}},
+	{XK_z, {0x1d, 0x00}, {0x1c, 0x00}, {0x1c, 0x00}},
+	{XK_BackSpace, {0x2a, 0x00}, {0x1c, 0x00}, {0x1c, 0x00}},
+	{XK_Super_L, {0x00, 0x08}, {0x00, 0x08}, {0x00, 0x08}}
+};
 
 struct keysym keysyms[] = {
 	[0] = {"", {0x00, 0x00}, {0x00, 0x00}},
@@ -114,6 +122,16 @@ struct keysym keysyms[] = {
 	{"}", {0x30, 0x02}, {0x27, 0x40}, {0x27, 0x40}},
 	{"~", {0x35, 0x02}, {0x30, 0x40}, {0x30, 0x40}}
 };
+
+struct x11_keysym* toscan2 (unsigned int x11_keycode) {
+        printf ("Looking for 0x%x\n", x11_keycode);
+	for (int i = 0; i < sizeof (x11_keysyms)/sizeof (struct x11_keysym); i++) {
+		if (x11_keysyms[i].sym == x11_keycode) {
+			return &(x11_keysyms[i]);
+		}
+	}
+	return NULL; // error
+}
 
 struct keysym* toscan (const char* utf8) {
 	if (utf8[1] == '\0') return &(keysyms[(int)utf8[0]]); //if char is not wide, it is on the corrent ascii position in the look up table
