@@ -34,19 +34,34 @@ std::unordered_map<KeySym, unsigned char> x11_keysyms =
         {XK_x, 0x1B},
         {XK_y, 0x1C},
         {XK_z, 0x1D},
-	{XK_space, 0x2C},
-        {XK_BackSpace, 0x2A},
+        {XK_1, 0x1E},
+        {XK_2, 0x1F},
+        {XK_3, 0x20},
+        {XK_4, 0x21},
+        {XK_5, 0x22},
+        {XK_6, 0x23},
+        {XK_7, 0x24},
+        {XK_8, 0x25},
+        {XK_9, 0x26},
+        {XK_0, 0x27},
         {XK_Return, 0x28},
+        {XK_Escape, 0x29},
+        {XK_BackSpace, 0x2A},
+        {XK_Tab, 0x2B},
+        {XK_space, 0x2C},
         {XK_Super_L, 0x08}};
 
 unsigned char *toscan2(unsigned int x11_keycode)
 {
-//    printf("Looking for 0x%x\n", x11_keycode);
+    //    printf("Looking for 0x%x\n", x11_keycode);
 
     auto scan_code = x11_keysyms[x11_keycode];
 
     if (scan_code == '\0')
     {
+        char *sym_name = XKeysymToString(x11_keycode);
+        printf("Could not find scan code: %s [0x%x]\n", sym_name, x11_keycode);
+        
         return NULL;
     }
     else

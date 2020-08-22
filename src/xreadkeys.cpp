@@ -81,10 +81,6 @@ int main(int argc, char **argv)
         {
             KeySym keysym = XLookupKeysym(&event.xkey, 0);
 
-            char *sym_name = XKeysymToString(keysym);
-
-//            printf("KeyPress: %s [0x%lx]\n", sym_name, keysym);
-
             kb.key_down_handler(keysym);
 
             /* exit on ESC key press */
@@ -94,10 +90,6 @@ int main(int argc, char **argv)
         else if (event.type == KeyRelease)
         {
             KeySym keysym = XLookupKeysym(&event.xkey, 0);
-
-            char *sym_name = XKeysymToString(keysym);
-
-//            printf("KeyRelease: %s [0x%lx]\n", sym_name, keysym);
 
             kb.key_up_handler(keysym);
         }

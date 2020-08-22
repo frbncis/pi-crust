@@ -50,12 +50,7 @@ void Keyboard::send_keyboard_reports()
 
             if (s != NULL)
             {
-//                std::cout << "Reporting " << held_key << "\n";
                 report_buffer[buffer_position++] = *s;
-            }
-            else
-            {
-                printf("Key symbol not found.\n");
             }
         }
 
