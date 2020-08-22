@@ -5,6 +5,7 @@
 #include "scancodes.h"
 #include <X11/XKBlib.h>
 
+#include "keyboard.h"
 #include "hid.h"
 
 enum params
@@ -55,11 +56,13 @@ int main(int argc, char **argv)
     Display *display;
     Window window;
     XEvent event;
+    Keyboard kb = Keyboard(argv[P_DEV]);
+
     int eventLoopRunOnce = 0;
     int s;
 
     printf("Starting...\n");
-    printf("Opening %s\n", argv[P_DEV]);
+    // printf("Opening %s\n", argv[P_DEV]);
 
     /* open connection with the server */
     display = XOpenDisplay(NULL);
@@ -92,45 +95,21 @@ int main(int argc, char **argv)
     {
         XNextEvent(display, &event);
 
-        FILE *hid_dev = NULL;
-
-        if (event.type == KeyPress || event.type == KeyRelease)
-        {
-            hid_dev = fopen(argv[P_DEV], "w");
-        }
+        // FILE *hid_dev = NULL;
 
         /* keyboard events */
         if (event.type == KeyPress)
         {
             KeySym keysym = XLookupKeysym(&event.xkey, 0);
 
-
             char *sym_name = XKeysymToString(keysym);
 
             printf("KeyPress: %s [0x%lx]\n", sym_name, keysym);
 
-            struct x11_keysym *s = toscan2(keysym);
-            if (s == NULL)
-            {
-                printf("Key symbol not found.\n");
-                continue;
-            }
+            kb.key_down_handler(keysym);
 
-            struct layout *l = tolay(s, atoi(argv[P_LAY]));
-            if (l == NULL)
-            {
-                fprintf(stderr, "Unrecognised keyboard layout.\n");
-                continue;
-            }
 
-            send_key(hid_dev, l->key, l->mod);
-            send_key(hid_dev, '\0', '\0'); //release all keys
-            if (l->is_dead)
-            {
-                //dead keys need to be pressed twice to show up
-                send_key(hid_dev, l->key, l->mod);
-                send_key(hid_dev, '\0', '\0'); //release all keys
-            }
+            // fclose(hid_dev);
 
             /* exit on ESC key press */
             if (event.xkey.keycode == 0x09)
@@ -138,7 +117,13 @@ int main(int argc, char **argv)
         }
         else if (event.type == KeyRelease)
         {
-            // printf( "KeyRelease: %x\n", event.xkey.keycode );
+            KeySym keysym = XLookupKeysym(&event.xkey, 0);
+
+            char *sym_name = XKeysymToString(keysym);
+
+            printf("KeyRelease: %s [0x%lx]\n", sym_name, keysym);
+
+            kb.key_up_handler(keysym);
         }
         /* dummy x11 screen entry/exit events */
         else if (event.type == EnterNotify && !eventLoopRunOnce)
@@ -154,10 +139,7 @@ int main(int argc, char **argv)
             printf("LeaveWindow\n");
         }
 
-        if (hid_dev != NULL)
-        {
-            fclose(hid_dev);
-        }
+        kb.send_keyboard_reports();
     }
 
     /* close connection to server */
