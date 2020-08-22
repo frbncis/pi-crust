@@ -48,5 +48,5 @@ enum kbdl
 
 struct x11_keysym *toscan2(unsigned int x11_keycode);     //returns the layout struct of a keysym
 struct keysym *toscan(const char *utf8);                  //returns the layout struct of a keysym
-struct layout *tolay(struct keysym *s, enum kbdl layout); //returns layout struct from keysym struct
+struct layout *tolay(struct x11_keysym *s, enum kbdl layout); //returns layout struct from keysym struct
 #endif

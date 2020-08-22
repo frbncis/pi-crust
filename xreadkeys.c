@@ -5,6 +5,8 @@
 #include "scancodes.h"
 #include <X11/XKBlib.h>
 
+#include "hid.h"
+
 enum params
 {          //argv-indices:
     P_EXE, //executable name
@@ -30,8 +32,6 @@ enum errors
     ERR_LAZY      //i haven't done this
 };
 
-void send_key(FILE *hid_dev, unsigned short key, unsigned short mod);
-enum errors send_unicode(FILE *hid_dev, unsigned int unicode, enum uni_m method, enum kbdl layout);
 
 int main(int argc, char **argv)
 {
@@ -93,6 +93,7 @@ int main(int argc, char **argv)
         XNextEvent(display, &event);
 
         FILE *hid_dev = NULL;
+
         if (event.type == KeyPress || event.type == KeyRelease)
         {
             hid_dev = fopen(argv[P_DEV], "w");
@@ -102,22 +103,13 @@ int main(int argc, char **argv)
         if (event.type == KeyPress)
         {
             KeySym keysym = XLookupKeysym(&event.xkey, 0);
-            const char space[] = " ";
-            const char *test = &space[0];
 
-            char *sym_name = NULL;
-            if (event.xkey.keycode == 0x41)
-            {
-                sym_name = test;
-            }
-            else
-            {
-                sym_name = XKeysymToString(keysym);
-            }
 
-            printf("KeyPress: %s [0x%x]\n", sym_name, keysym);
+            char *sym_name = XKeysymToString(keysym);
 
-            struct keysym *s = toscan2(keysym);
+            printf("KeyPress: %s [0x%lx]\n", sym_name, keysym);
+
+            struct x11_keysym *s = toscan2(keysym);
             if (s == NULL)
             {
                 printf("Key symbol not found.\n");
@@ -131,7 +123,6 @@ int main(int argc, char **argv)
                 continue;
             }
 
-            //            if (l->key != 0x00) {
             send_key(hid_dev, l->key, l->mod);
             send_key(hid_dev, '\0', '\0'); //release all keys
             if (l->is_dead)
@@ -140,7 +131,6 @@ int main(int argc, char **argv)
                 send_key(hid_dev, l->key, l->mod);
                 send_key(hid_dev, '\0', '\0'); //release all keys
             }
-            //            }
 
             /* exit on ESC key press */
             if (event.xkey.keycode == 0x09)
@@ -174,68 +164,4 @@ int main(int argc, char **argv)
     XCloseDisplay(display);
 
     return 0;
-}
-
-void send_key(FILE *hid_dev, unsigned short key, unsigned short mod)
-{
-    if (hid_dev != NULL)
-    {
-        fprintf(hid_dev, "%c%c%c%c%c%c%c%c", mod, '\0', key, '\0', '\0', '\0', '\0', '\0');
-    }
-    else
-    {
-        printf(stderr, "Cannot write to device\n");
-    }
-}
-
-enum errors send_unicode(FILE *hid_dev, unsigned int unicode, enum uni_m method, enum kbdl layout)
-{
-    char buf[10];
-    struct keysym *s;
-    struct layout *l;
-
-    if (unicode == 0x00)
-    {
-        fprintf(stderr, "Symbol not in lookup table!\n");
-        return ERR_SYMBOL;
-    }
-
-    switch (method)
-    {
-    case SKIP:
-        break;
-    case GTK_HOLD:
-        sprintf(buf, "%x", unicode);
-        s = toscan("u");
-        l = tolay(s, layout);
-        send_key(hid_dev, l->key, MOD_LCTRL | MOD_LSHIFT);
-        for (int i = 0; i < strlen(buf); i++)
-        {
-            s = toscan((char[2]){buf[i], '\0'});
-            l = tolay(s, layout);
-            send_key(hid_dev, l->key, MOD_LCTRL | MOD_LSHIFT);
-        }
-        send_key(hid_dev, '\0', '\0');
-        break;
-    case GTK_SPACE:
-        sprintf(buf, "%x ", unicode);
-        s = toscan("u");
-        l = tolay(s, layout);
-        send_key(hid_dev, l->key, MOD_LCTRL | MOD_LSHIFT);
-        for (int i = 0; i < strlen(buf); i++)
-        {
-            s = toscan((char[2]){buf[i], '\0'});
-            l = tolay(s, layout);
-            send_key(hid_dev, l->key, MOD_NONE);
-        }
-        send_key(hid_dev, '\0', '\0');
-        break;
-    case WINDOWS:
-        fprintf(stderr, "windows method not implemented!\n");
-        return ERR_LAZY;
-    default:
-        fprintf(stderr, "unknown unicode method!\n");
-        return ERR_LAYOUT; //TODO: better error code
-    }
-    return ERR_SUCCESS;
 }

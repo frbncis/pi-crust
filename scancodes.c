@@ -2,6 +2,7 @@
 #include <string.h>
 #include "scancodes.h"
 #include <X11/keysymdef.h>
+#include <stdio.h>
 
 struct x11_keysym x11_keysyms[] = {
     {XK_a, {0x04, 0x00}, {0x04, 0x00}, {0x04, 0x00}},
@@ -148,7 +149,7 @@ struct keysym *toscan(const char *utf8)
     return NULL; // error
 }
 
-struct layout *tolay(struct keysym *s, enum kbdl layout)
+struct layout *tolay(struct x11_keysym *s, enum kbdl layout)
 {
     switch (layout)
     {
