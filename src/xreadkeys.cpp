@@ -6,11 +6,13 @@
 #include <X11/XKBlib.h>
 
 #include "keyboard.h"
+#include "mouse.h"
 
 enum params
 {          //argv-indices:
     P_EXE, //executable name
-    P_DEV, //device file
+    P_DEV_KEYBOARD, // keyboard device file
+    P_DEV_MOUSE,    // mouse device file
     NUM_P  //number of parameters
 };
 
@@ -37,7 +39,8 @@ int main(int argc, char **argv)
     Display *display;
     Window window;
     XEvent event;
-    Keyboard kb = Keyboard(argv[P_DEV]);
+    Keyboard kb = Keyboard(argv[P_DEV_KEYBOARD]);
+    Mouse mouse = Mouse(argv[P_DEV_MOUSE]);
 
     int eventLoopRunOnce = 0;
     int s;
@@ -64,7 +67,7 @@ int main(int argc, char **argv)
                                  BlackPixel(display, s), WhitePixel(display, s));
 
     /* select kind of events we are interested in */
-    XSelectInput(display, window, KeyPressMask | KeyReleaseMask | EnterWindowMask | LeaveWindowMask);
+    XSelectInput(display, window, KeyPressMask | KeyReleaseMask | EnterWindowMask | LeaveWindowMask | PointerMotionMask);
 
     /* map (show) the window */
     XMapWindow(display, window);
@@ -105,6 +108,12 @@ int main(int argc, char **argv)
         else if (event.type == LeaveNotify)
         {
             printf("LeaveWindow\n");
+        }
+        else if (event.type == MotionNotify)
+        {
+            mouse.update_position(event.xmotion.x, event.xmotion.y);
+
+            mouse.send_mouse_report();
         }
 
         kb.send_keyboard_reports();
