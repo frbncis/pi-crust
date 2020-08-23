@@ -48,8 +48,8 @@ void Mouse::update_position(int x, int y)
     }
     else
     {
-        this->x_delta = this->x_previous - x;
-        this->y_delta = this->y_previous - y;
+        this->x_delta = x - this->x_previous;
+        this->y_delta = y - this->y_previous;
     }
 
     this->x_previous = x;
@@ -58,7 +58,7 @@ void Mouse::update_position(int x, int y)
 
 void Mouse::send_mouse_report()
 {
-    printf("X: %d, Y: %d\n", x_delta, y_delta);
+    // printf("X: %d, Y: %d\n", x_delta, y_delta);
 
     FILE *hid_pipe = fopen(this->hid_device.c_str(), "w");
 
