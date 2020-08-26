@@ -1,3 +1,4 @@
+#include <map>
 #include <string>
 
 #pragma once
@@ -21,9 +22,8 @@ private:
     int x_previous;
     int y_previous;
     
-    int x_delta;
-    int y_delta;
+    int8_t x_delta;
+    int8_t y_delta;
 
-    bool left_button_pressed;
-    bool right_button_pressed;
+    std::map<char, bool> pressed_buttons;
 };

@@ -67,7 +67,7 @@ int main(int argc, char **argv)
                                  BlackPixel(display, s), WhitePixel(display, s));
 
     /* select kind of events we are interested in */
-    XSelectInput(display, window, KeyPressMask | KeyReleaseMask | EnterWindowMask | LeaveWindowMask | PointerMotionMask);
+    XSelectInput(display, window, KeyPressMask | KeyReleaseMask | EnterWindowMask | LeaveWindowMask | PointerMotionMask | ButtonPressMask | ButtonReleaseMask);
 
     /* map (show) the window */
     XMapWindow(display, window);
@@ -82,8 +82,7 @@ int main(int argc, char **argv)
         /* keyboard events */
         if (event.type == KeyPress)
         {
-            KeySym keysym = XLookupKeysym(&event.xkey, 0);
-
+            KeySym keysym = XLookupKeysym(&event.xkey, 0); 
             kb.key_down_handler(keysym);
 
             /* exit on ESC key press */
@@ -115,6 +114,18 @@ int main(int argc, char **argv)
 
             mouse.send_mouse_report();
         }
+	else if (event.type == ButtonPress)
+	{
+            printf("ButtonPress %d\n", event.xbutton.button);
+            mouse.button_pressed_handler(event.xbutton.button);
+            mouse.send_mouse_report();
+	}
+	else if (event.type == ButtonRelease)
+	{
+            printf("ButtonRelease %d\n", event.xbutton.button);
+            mouse.button_released_handler(event.xbutton.button);
+	    mouse.send_mouse_report();
+	}
 
         kb.send_keyboard_reports();
     }
