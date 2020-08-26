@@ -74,3 +74,6 @@ make all && ./bin/kvm /dev/hidg0
 * https://wiki.osdev.org/USB_Human_Interface_Devices - Human readable description on how USB HID devices work
 * https://gist.github.com/javiercantero/7753445 - Sample code for interfacing with X11.
 * https://gist.github.com/divinity76/ce210b5dbcd9ea7d0585ac403caef577 - Setting up X11 dummy devices
+* http://manpages.ubuntu.com/manpages/xenial/man8/usbhid-dump.8.html - `usbhid-dump` for viewing USB HID reports coming in for debugging
+* https://eleccelerator.com/tutorial-about-usb-hid-report-descriptors/ - *amazing* tutorial on USB HID report descriptors
+* https://eleccelerator.com/usbdescreqparser/ - USB HID report descriptor parser 
