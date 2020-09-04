@@ -5,8 +5,8 @@
 #define RIGHT_BUTTON 3
 #define VSCROLL_UP 4
 #define VSCROLL_DOWN 5
-#define HSCROLL_LEFT 6
-#define HSCROLL_RIGHT 7
+#define BACK_BUTTON 6
+#define FORWARD_BUTTON 7
 
 Mouse::Mouse(std::string hid_device)
 {
@@ -58,12 +58,8 @@ void Mouse::send_mouse_report()
     buttons += pressed_buttons[LEFT_BUTTON] << 0;
     buttons += pressed_buttons[RIGHT_BUTTON] << 1;
     buttons += pressed_buttons[MIDDLE_BUTTON] << 2;
-
-    // Buttons 4, 5, 6, 7, 8 not mapped yet.
-    for (int i = 4; i <= 9; i++)
-    {
-	buttons += (0 << i);
-    }
+    buttons += pressed_buttons[BACK_BUTTON] << 3;
+    buttons += pressed_buttons[FORWARD_BUTTON] << 4;
 
     if (pressed_buttons[VSCROLL_UP])
     {

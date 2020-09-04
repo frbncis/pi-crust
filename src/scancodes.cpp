@@ -7,6 +7,7 @@
 
 std::unordered_map<KeySym, unsigned char> x11_keysyms =
     {
+
         {XK_a, 0x04},
         {XK_b, 0x05},
         {XK_c, 0x06},
@@ -48,6 +49,25 @@ std::unordered_map<KeySym, unsigned char> x11_keysyms =
         {XK_BackSpace, 0x2A},
         {XK_Tab, 0x2B},
         {XK_space, 0x2C},
+	{XK_minus, 0x2d},
+	{XK_equal, 0x2e},
+	{XK_bracketleft, 0x2f},
+	{XK_bracketright, 0x30},
+	{XK_backslash, 0x31},
+	{XK_semicolon, 0x33},
+	{XK_apostrophe, 0x34 },
+	{XK_comma, 0x36},
+	{XK_period, 0x37},
+	{XK_slash, 0x38},
+	{XK_Home, 0x4a},
+	{XK_Prior, 0x4b},
+	{XK_Delete, 0x4c},
+	{XK_End, 0x4d},
+	{XK_Next, 0x4e},
+	{XK_Right, 0x4f},
+        {XK_Left, 0x50},
+	{XK_Down, 0x51},
+	{XK_Up, 0x52},
         {XK_Super_L, 0x08}};
 
 unsigned char *get_scancode(unsigned int x11_keycode)

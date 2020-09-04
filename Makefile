@@ -14,7 +14,7 @@ BIN				:= bin
 SRC				:= src
 INCLUDE			:= include
 LIB				:= LIB
-LIBRARIES		:= -lX11
+LIBRARIES		:= -lX11 -lXi
 EXECUTABLE		:= kvm
 
 
@@ -25,7 +25,7 @@ run: clean all
 	@echo "Executing..."
 	./$(BIN)/$(EXECUTABLE)
 
-$(BIN)/$(EXECUTABLE): $(SRC)/*.cpp
+$(BIN)/$(EXECUTABLE): $(SRC)/*.cpp #$(SRC)/*.c
 	@echo "Building..."
 	$(CXX) $^  $(CXX_FLAGS) -I$(INCLUDE) -L$(LIB) -o $@ $(LIBRARIES) $(LINKER_FLAGS)
 
