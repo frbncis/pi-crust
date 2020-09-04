@@ -29,6 +29,11 @@ $(BIN)/$(EXECUTABLE): $(SRC)/*.cpp #$(SRC)/*.c
 	@echo "Building..."
 	$(CXX) $^  $(CXX_FLAGS) -I$(INCLUDE) -L$(LIB) -o $@ $(LIBRARIES) $(LINKER_FLAGS)
 
+install: scripts/*
+	@echo "Installing..."
+	-cp scripts/isticktoit_usb /usr/bin/isticktoit_usb
+	chmod +x /usr/bin/isticktoit_usb
+
 clean:
 	@echo "Cleaning..."
 	-rm $(BIN)/*
