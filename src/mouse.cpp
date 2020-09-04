@@ -71,13 +71,27 @@ void Mouse::send_mouse_report()
        scroll -= 1;
     }
 
+    // x_delta and y_delta
+    // need to be reported as:
+    // [bit 8 - 0] [bit 16 - 9]
+
+    uint8_t x1 = x_delta & 0xFF;
+    uint8_t x2 = x_delta >> 8;
+
+    uint8_t y1 = y_delta & 0xFF;
+    uint8_t y2 = y_delta >> 8;
+    // printf("x_delta: %d (%#04x), y_delta: %d\n", x_delta, x_delta, y_delta);
+    // printf("%#02x %#02x \n", x1, x2);
+
     fprintf(
        hid_pipe,
-       "%c%c%c%c",
+       "%c%c%c%c%c%c",
        buttons,
-       x_delta,
-       y_delta,
-       scroll);
+       scroll,
+       x1,
+       x2,
+       y1,
+       y2);
 
     // The deltas have been consumed, set to zero
     // in the event that the mouse position has not 

@@ -22,8 +22,8 @@ private:
     int x_previous;
     int y_previous;
     
-    int8_t x_delta;
-    int8_t y_delta;
+    int16_t x_delta;
+    int16_t y_delta;
 
     std::map<char, bool> pressed_buttons;
 };
