@@ -30,9 +30,24 @@ $(BIN)/$(EXECUTABLE): $(SRC)/*.cpp #$(SRC)/*.c
 	$(CXX) $^  $(CXX_FLAGS) -I$(INCLUDE) -L$(LIB) -o $@ $(LIBRARIES) $(LINKER_FLAGS)
 
 install: scripts/*
-	@echo "Installing..."
+	@echo "Installing libcomposite configuration..."
 	-cp scripts/isticktoit_usb /usr/bin/isticktoit_usb
-	chmod +x /usr/bin/isticktoit_usb
+	-chmod +x /usr/bin/isticktoit_usb
+	-cp bin/kvm /usr/bin/kvm
+	-chmod +x /usr/bin/kvm
+	-cp scripts/kvm.service /etc/systemd/system/kvm.service
+	-cp scripts/x.service /etc/systemd/system/x.service
+	-cp scripts/barrierc.service /etc/systemd/system/barrierc.service
+	-chmod 644 /etc/systemd/system/kvm.service
+	-chmod 644 /etc/systemd/system/x.service
+	-chmod 644 /etc/systemd/system/barrierc.service
+	-systemctl start kvm.service
+	-systemctl enable kvm.service
+	-systemctl start x.service
+	-systemctl enable x.service
+	-systemctl start barrierc.service
+	-systemctl enable barrierc.service
+	-systemctl daemon-reload
 
 clean:
 	@echo "Cleaning..."

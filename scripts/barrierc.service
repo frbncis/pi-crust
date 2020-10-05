@@ -1,0 +1,10 @@
+[Unit]
+Description=Barrier Client daemon
+After=network.target
+
+[Service]
+ExecStart=barrierc --enable-crypto --name kvm-01 --display :0.0 --debug INFO -f 10.160.0.199
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

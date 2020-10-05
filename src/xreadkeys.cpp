@@ -84,10 +84,6 @@ int main(int argc, char **argv)
         {
             KeySym keysym = XLookupKeysym(&event.xkey, 0); 
             kb.key_down_handler(keysym);
-
-            /* exit on ESC key press */
-            if (event.xkey.keycode == 0x09)
-                break;
         }
         else if (event.type == KeyRelease)
         {
@@ -102,11 +98,11 @@ int main(int argc, char **argv)
         }
         else if (event.type == EnterNotify && eventLoopRunOnce)
         {
-            printf("EnterWindow\n");
+            printf("EnterWindow: x: %d, y: %d \n");
         }
         else if (event.type == LeaveNotify)
         {
-            printf("LeaveWindow\n");
+            printf("LeaveWindow: x: %d, y: %d \n");
         }
         else if (event.type == MotionNotify)
         {

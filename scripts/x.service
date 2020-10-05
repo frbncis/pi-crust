@@ -1,0 +1,10 @@
+[Unit]
+Description=Startx
+After=systemd-user-sessions.service
+
+[Service]
+ExecStart=/usr/bin/startx
+Restart=on-abort
+
+[Install]
+WantedBy=graphical.target

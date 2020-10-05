@@ -1,0 +1,11 @@
+[Unit]
+Description=KVM
+After=multi-user.target
+
+[Service]
+Environment=DISPLAY=:0.0
+ExecStart=/usr/bin/kvm /dev/hidg0 /dev/hidg1
+Restart=always
+
+[Install]
+WantedBy=graphical.target
