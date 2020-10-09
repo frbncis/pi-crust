@@ -9,11 +9,11 @@
 #include "mouse.h"
 
 enum params
-{          //argv-indices:
-    P_EXE, //executable name
+{                   //argv-indices:
+    P_EXE,          //executable name
     P_DEV_KEYBOARD, // keyboard device file
     P_DEV_MOUSE,    // mouse device file
-    NUM_P  //number of parameters
+    NUM_P           //number of parameters
 };
 
 enum errors
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
         /* keyboard events */
         if (event.type == KeyPress)
         {
-            KeySym keysym = XLookupKeysym(&event.xkey, 0); 
+            KeySym keysym = XLookupKeysym(&event.xkey, 0);
             kb.key_down_handler(keysym);
         }
         else if (event.type == KeyRelease)
@@ -110,18 +110,18 @@ int main(int argc, char **argv)
 
             mouse.send_mouse_report();
         }
-	else if (event.type == ButtonPress)
-	{
+        else if (event.type == ButtonPress)
+        {
             printf("ButtonPress %d\n", event.xbutton.button);
             mouse.button_pressed_handler(event.xbutton.button);
             mouse.send_mouse_report();
-	}
-	else if (event.type == ButtonRelease)
-	{
+        }
+        else if (event.type == ButtonRelease)
+        {
             printf("ButtonRelease %d\n", event.xbutton.button);
             mouse.button_released_handler(event.xbutton.button);
-	    mouse.send_mouse_report();
-	}
+            mouse.send_mouse_report();
+        }
 
         kb.send_keyboard_reports();
     }

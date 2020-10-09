@@ -3,7 +3,8 @@
 
 #pragma once
 
-class Mouse {
+class Mouse
+{
 public:
     Mouse(std::string hid_device);
 
@@ -21,7 +22,7 @@ private:
 
     int x_previous;
     int y_previous;
-    
+
     int16_t x_delta;
     int16_t y_delta;
 

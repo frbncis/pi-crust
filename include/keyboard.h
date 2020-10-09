@@ -3,7 +3,8 @@
 
 #pragma once
 
-class Keyboard {
+class Keyboard
+{
 public:
     Keyboard(std::string hid_device);
 

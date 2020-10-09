@@ -50,7 +50,7 @@ void Mouse::update_position(int x, int y)
 void Mouse::send_mouse_report()
 {
     FILE *hid_pipe = fopen(this->hid_device.c_str(), "w");
-    
+
     uint8_t buttons = 0;
     int8_t scroll = 0;
 
@@ -68,7 +68,7 @@ void Mouse::send_mouse_report()
 
     if (pressed_buttons[VSCROLL_DOWN])
     {
-       scroll -= 1;
+        scroll -= 1;
     }
 
     // x_delta and y_delta
@@ -84,20 +84,20 @@ void Mouse::send_mouse_report()
     // printf("%#02x %#02x \n", x1, x2);
 
     fprintf(
-       hid_pipe,
-       "%c%c%c%c%c%c",
-       buttons,
-       scroll,
-       x1,
-       x2,
-       y1,
-       y2);
+        hid_pipe,
+        "%c%c%c%c%c%c",
+        buttons,
+        scroll,
+        x1,
+        x2,
+        y1,
+        y2);
 
     // The deltas have been consumed, set to zero
-    // in the event that the mouse position has not 
+    // in the event that the mouse position has not
     // changed before we send the next report.
     x_delta = 0;
     y_delta = 0;
 
-   fclose(hid_pipe);
+    fclose(hid_pipe);
 }
