@@ -4,6 +4,7 @@
 #include <string.h>
 #include "scancodes.h"
 #include <X11/XKBlib.h>
+#include <X11/extensions/XInput2.h>
 
 #include "keyboard.h"
 #include "mouse.h"
@@ -39,14 +40,14 @@ int main(int argc, char **argv)
     Display *display;
     Window window;
     XEvent event;
+    XIEvent *xi_event;
+    XIRawEvent *xev;
+    XGenericEventCookie *cookie = &event.xcookie;
+
     Keyboard kb = Keyboard(argv[P_DEV_KEYBOARD]);
     Mouse mouse = Mouse(argv[P_DEV_MOUSE]);
 
-    int eventLoopRunOnce = 0;
-    int s;
-
     printf("Starting...\n");
-    // printf("Opening %s\n", argv[P_DEV]);
 
     /* open connection with the server */
     display = XOpenDisplay(NULL);
@@ -56,21 +57,30 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    s = DefaultScreen(display);
-
-    /* get the display width and height */
-    int width = DisplayWidth(display, s);
-    int height = DisplayHeight(display, s);
-
     /* create fullscreen window */
-    window = XCreateSimpleWindow(display, RootWindow(display, s), 0, 0, width, height, 1,
-                                 BlackPixel(display, s), WhitePixel(display, s));
+    window = XRootWindow(display, 0);
+
+    /*
+     * Set mask to receive XI_RawMotion events. Because it's raw,
+     * XWarpPointer() events are not included, you can use XI_Motion
+     * instead.
+     */
+    unsigned char mask_bytes[(XI_LASTEVENT + 7) / 8] = {0}; /* must be zeroed! */
+    XISetMask(mask_bytes, XI_RawMotion);
+    XISetMask(mask_bytes, XI_RawButtonPress);
+    XISetMask(mask_bytes, XI_RawButtonRelease);
+    XISetMask(mask_bytes, XI_RawKeyPress);
+    XISetMask(mask_bytes, XI_RawKeyRelease);
 
     /* select kind of events we are interested in */
-    XSelectInput(display, window, KeyPressMask | KeyReleaseMask | EnterWindowMask | LeaveWindowMask | PointerMotionMask | ButtonPressMask | ButtonReleaseMask);
+    /* Set mask to receive events from all master devices */
+    XIEventMask evmasks[1];
+    /* You can use XIAllDevices for XWarpPointer() */
+    evmasks[0].deviceid = XIAllMasterDevices;
+    evmasks[0].mask_len = sizeof(mask_bytes);
+    evmasks[0].mask = mask_bytes;
 
-    /* map (show) the window */
-    XMapWindow(display, window);
+    XISelectEvents(display, window, evmasks, 1);
 
     printf("Starting event loop...\n");
 
@@ -79,48 +89,84 @@ int main(int argc, char **argv)
     {
         XNextEvent(display, &event);
 
-        /* keyboard events */
-        if (event.type == KeyPress)
+        if (event.xcookie.type != GenericEvent)
         {
-            KeySym keysym = XLookupKeysym(&event.xkey, 0);
+            /* not an XInput event */
+            continue;
+        }
+
+        XGetEventData(display, &event.xcookie);
+
+        if (event.xcookie.evtype == XI_RawMotion)
+        {
+            XFreeEventData(display, &event.xcookie);
+
+            Window root_return, child_return;
+            int root_x_return, root_y_return;
+            int win_x_return, win_y_return;
+            unsigned int mask_return;
+
+            /*
+            * We need:
+            *     child_return - the active window under the cursor
+            *     win_{x,y}_return - pointer coordinate with respect to root window
+            */
+            int retval = XQueryPointer(display, window, &root_return, &child_return,
+                                       &root_x_return, &root_y_return,
+                                       &win_x_return, &win_y_return,
+                                       &mask_return);
+            if (!retval)
+            {
+                /* pointer is not in the same screen, ignore */
+                continue;
+            }
+
+            mouse.update_position(root_x_return, root_y_return);
+            mouse.send_mouse_report();
+
+            printf("XI_RawMotion: x %d y %d\n", root_x_return, root_y_return);
+        }
+        else if (event.xcookie.evtype == XI_RawButtonPress)
+        {
+            xi_event = (XIEvent *)cookie->data;
+            xev = (XIRawEvent *)xi_event;
+
+            printf("XI_RawButtonPress: %d \n", xev->detail);
+
+            mouse.button_pressed_handler(xev->detail);
+            mouse.send_mouse_report();
+        }
+        else if (event.xcookie.evtype == XI_RawButtonRelease)
+        {
+            xi_event = (XIEvent *)cookie->data;
+            xev = (XIRawEvent *)xi_event;
+
+            printf("XI_RawButtonRelease: %d \n", xev->detail);
+
+            mouse.button_released_handler(xev->detail);
+            mouse.send_mouse_report();
+        }
+        else if (event.xcookie.evtype == XI_RawKeyPress)
+        {
+            xi_event = (XIEvent *)cookie->data;
+            xev = (XIRawEvent *)xi_event;
+
+            // xev->detail returns the keycode
+            auto keysym = XKeycodeToKeysym(display, xev->detail, 0);
+
+            printf("XI_RawKeyPress: %d \n", keysym);
             kb.key_down_handler(keysym);
         }
-        else if (event.type == KeyRelease)
+        else if (event.xcookie.evtype == XI_RawKeyRelease)
         {
-            KeySym keysym = XLookupKeysym(&event.xkey, 0);
+            xi_event = (XIEvent *)cookie->data;
+            xev = (XIRawEvent *)xi_event;
 
-            kb.key_up_handler(keysym);
-        }
-        /* dummy x11 screen entry/exit events */
-        else if (event.type == EnterNotify && !eventLoopRunOnce)
-        {
-            eventLoopRunOnce = 1;
-        }
-        else if (event.type == EnterNotify && eventLoopRunOnce)
-        {
-            printf("EnterWindow: x: %d, y: %d \n");
-        }
-        else if (event.type == LeaveNotify)
-        {
-            printf("LeaveWindow: x: %d, y: %d \n");
-        }
-        else if (event.type == MotionNotify)
-        {
-            mouse.update_position(event.xmotion.x, event.xmotion.y);
+            // xev->detail returns the keycode
+            auto keysym = XKeycodeToKeysym(display, xev->detail, 0);
 
-            mouse.send_mouse_report();
-        }
-        else if (event.type == ButtonPress)
-        {
-            printf("ButtonPress %d\n", event.xbutton.button);
-            mouse.button_pressed_handler(event.xbutton.button);
-            mouse.send_mouse_report();
-        }
-        else if (event.type == ButtonRelease)
-        {
-            printf("ButtonRelease %d\n", event.xbutton.button);
-            mouse.button_released_handler(event.xbutton.button);
-            mouse.send_mouse_report();
+            printf("XI_RawKeyRelease: %d \n", xev->detail);
+            kb.key_up_handler(xev->detail);
         }
 
         kb.send_keyboard_reports();
